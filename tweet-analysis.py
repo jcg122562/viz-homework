@@ -7,12 +7,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-
 sns.set()
-
-# uncomment these two lines so you can see all the records when you print or write instead of dot dot dot ...
-# pd.set_option('display.max_columns', None)
-# pd.set_option('display.max_rows', None)
 
 
 def pretty_print(name, to_print):
@@ -25,21 +20,13 @@ data_dir_exists = os.path.isdir('./data')
 if not data_dir_exists:
     os.mkdir('data')
 
-# filename where to print the output for my reference
-f = open("data/my_output_draft.txt", "w+")
-
-
-def pretty_write(name, to_write):
-    f.write(f'{name}:\r')
-    f.write(f'{to_write}\n\n')
-
-
-# read / load  the file
+# read / load  the tweet dataset file
 df = pd.read_csv(filepath_or_buffer='data/tweets.csv',
                  sep=',',
                  header=0)  # header starts in first line
 
-# add actual date
+# add actual date column
+
 df['actual_date'] = df['time'].str[:10]
 df['actual_date'] = pd.to_datetime(df['actual_date'], format='%Y/%m/%d')
 
@@ -47,9 +34,11 @@ df['actual_date'] = pd.to_datetime(df['actual_date'], format='%Y/%m/%d')
 df['month_year'] = df['actual_date'].dt.to_period('M')
 df['month'] = df['actual_date'].dt.month
 df['month'] = df['month'].astype(str)
+
+# add post count
 df['post_count'] = df['handle'].count()
 
-# select only important columns
+# select only important columns to become the main dataframe
 df = df[['handle', 'text', 'is_retweet', 'time',
          'actual_date', 'lang', 'retweet_count', 'favorite_count', 'month_year', 'month', 'post_count']]
 
@@ -57,35 +46,40 @@ df = df[['handle', 'text', 'is_retweet', 'time',
 df = df[
     (df['actual_date'] >= '2016-4-1') & (df['actual_date'] <= '2016-9-30')]
 
+# select these columns
 df = df[['handle', 'actual_date', 'retweet_count', 'favorite_count', 'month_year', 'month', 'post_count']]
 
+# df2 dataframe
 df2 = df[['handle', 'actual_date', 'retweet_count', 'favorite_count', 'month_year', 'month', 'post_count']]
+
+# df7 dataframe
+df7 = df[['handle', 'actual_date', 'retweet_count', 'favorite_count', 'month_year', 'month', 'post_count']]
 
 # dataframe with all dates
 df1 = df[['handle', 'actual_date', 'retweet_count', 'favorite_count', 'month_year', 'month']]
 df1 = df1.groupby(['handle', 'actual_date'], as_index=False).agg({'retweet_count': 'sum', 'favorite_count': 'sum'})
 
-
 # set the x axis here
 x = np.arange(len(df.month_year.unique()))
-# group by
 
+# group by
 df3 = df.groupby(['handle', 'actual_date'], as_index=False).agg({'retweet_count': 'sum', 'favorite_count': 'sum',
                                                                  'post_count': 'count'})
 df3 = df3[(df3['handle'] == 'HillaryClinton')]
 
-
+# df groupby
 df = df.groupby(['handle', 'month_year'], as_index=False).agg({'retweet_count': 'sum', 'favorite_count': 'sum',
                                                                'post_count': 'count'})
 
 # at this point we have the desired dataset
 
 # Tweets count comparison
+# this is an initial work as I progress, I will improve my charts
 fig, ax = plt.subplots(2, 3, figsize=(12, 8), dpi=100)
 
 bar_width = .2
 
-# first chart bar
+# Chart 1 -- Bar Chart
 b1 = ax[0][0].bar(x, df.loc[df['handle'] == 'HillaryClinton', 'retweet_count'], width=bar_width,
                   label="Clinton")
 # Same thing, but offset the x by the width of the bar.
@@ -116,13 +110,11 @@ ax[0][0].yaxis.grid(True, color='#EEEEEE')
 ax[0][0].xaxis.grid(False)
 
 # Add axis and chart labels.
-ax[0][0].set_xlabel('Month Year', labelpad=10, fontsize=8)
-ax[0][0].set_ylabel('Retweet Count', labelpad=10, fontsize=8)
-ax[0][0].set_title('Retweet Comparison', pad=10, fontsize=8)
+ax[0][0].set_xlabel('Month Year', labelpad=10, fontsize=10, fontweight='bold')
+ax[0][0].set_ylabel('Retweet Count', labelpad=10, fontsize=10, fontweight='bold')
+ax[0][0].set_title('Retweet Comparison', pad=10, fontsize=12, fontweight='bold')
 
-# second chart linear
-
-# Plotting line chart
+# chart 2 - line chart / plot
 
 b1 = ax[1][0].plot(x, df.loc[df['handle'] == 'HillaryClinton', 'favorite_count'], label="Clinton",
                    marker='o', color='mediumvioletred')
@@ -146,11 +138,11 @@ ax[1][0].get_yaxis().get_major_formatter().set_scientific(False)
 ax[1][0].legend(prop={'size': 10})
 
 # Add axis and chart labels.
-ax[1][0].set_xlabel('Month Year', labelpad=10, fontsize=8)
-ax[1][0].set_ylabel('Favorite Count', labelpad=10, fontsize=8)
-ax[1][0].set_title('Favorite Comparison', pad=10, fontsize=8)
+ax[1][0].set_xlabel('Month Year', labelpad=10, fontsize=10, fontweight='bold')
+ax[1][0].set_ylabel('Favorite Count', labelpad=10, fontsize=10, fontweight='bold')
+ax[1][0].set_title('Favorite Comparison', pad=10, fontsize=12, fontweight='bold')
 
-# Chart 3 Scatter
+# Chart 3 - Scatter
 plt.style.use("ggplot")
 
 b1 = ax[0][1].scatter(x, df.loc[df['handle'] == 'HillaryClinton', 'favorite_count'], label="Clinton", alpha=0.7)
@@ -174,11 +166,11 @@ ax[0][1].get_yaxis().get_major_formatter().set_scientific(False)
 ax[0][1].legend(prop={'size': 10})
 
 # Add axis and chart labels.
-ax[0][1].set_xlabel('Month Year', labelpad=10, fontsize=8)
-ax[0][1].set_ylabel('Favorite Count', labelpad=10, fontsize=8)
-ax[0][1].set_title('Favorite Comparison', pad=10, fontsize=8)
+ax[0][1].set_xlabel('Month Year', labelpad=10, fontsize=10, fontweight='bold')
+ax[0][1].set_ylabel('Favorite Count', labelpad=10, fontsize=10, fontweight='bold')
+ax[0][1].set_title('Favorite Comparison', pad=10, fontsize=12, fontweight='bold')
 
-# 4th Chart
+# Chart 4
 
 
 b1 = ax[1][1].plot(df.loc[df['handle'] == 'HillaryClinton', 'retweet_count'], x, label="Clinton",
@@ -204,9 +196,9 @@ ax[1][1].get_xaxis().get_major_formatter().set_scientific(False)
 ax[1][1].legend(prop={'size': 10})
 
 # Add axis and chart labels.
-ax[1][1].set_xlabel('Favorite Count', labelpad=10, fontsize=8)
-ax[1][1].set_ylabel('Month Year', labelpad=10, fontsize=8)
-ax[1][1].set_title('Favorite Comparison', pad=10, fontsize=8)
+ax[1][1].set_xlabel('Favorite Count', labelpad=10, fontsize=10, fontweight='bold')
+ax[1][1].set_ylabel('Month Year', labelpad=10, fontsize=10, fontweight='bold')
+ax[1][1].set_title('Favorite Comparison', pad=10, fontsize=12, fontweight='bold')
 
 # # chart 5
 
@@ -243,9 +235,9 @@ ax[1][2].yaxis.grid(True, color='#EEEEEE')
 ax[1][2].xaxis.grid(False)
 
 # Add axis and chart labels.
-ax[1][2].set_xlabel('Month Year', labelpad=10, fontsize=8)
-ax[1][2].set_ylabel('Post Count', labelpad=10, fontsize=8)
-ax[1][2].set_title('Post Count Comparison', pad=10, fontsize=8)
+ax[1][2].set_xlabel('Month Year', labelpad=10, fontsize=10, fontweight='bold')
+ax[1][2].set_ylabel('Post Count', labelpad=10, fontsize=10, fontweight='bold')
+ax[1][2].set_title('Post Count Comparison', pad=10, fontsize=12, fontweight='bold')
 
 # Chart 6 Scatter
 plt.style.use("ggplot")
@@ -276,9 +268,9 @@ ax[0][2].get_yaxis().get_major_formatter().set_scientific(False)
 ax[0][2].legend(prop={'size': 10})
 
 # Add axis and chart labels.
-ax[0][2].set_xlabel('Month Year', labelpad=10, fontsize=8)
-ax[0][2].set_ylabel('Post Count', labelpad=10, fontsize=8)
-ax[0][2].set_title('Post Count Comparison', pad=10, fontsize=8)
+ax[0][2].set_xlabel('Month Year', labelpad=10, fontsize=10, fontweight='bold')
+ax[0][2].set_ylabel('Post Count', labelpad=10, fontsize=10, fontweight='bold')
+ax[0][2].set_title('Post Count Comparison', pad=10, fontsize=12, fontweight='bold')
 
 
 fig.tight_layout()
@@ -321,14 +313,14 @@ for tick in ax.yaxis.get_major_ticks():
     tick.label.set_fontsize(8)
 
 # Add legend.
-#ax.legend()
+#ax.legend()  ### this is where I am getting the edgecolor error -- seems know bug
 
 # Add axis and chart labels.
 ax.set_xlabel('Month Year', labelpad=10, fontsize=8)
 ax.set_ylabel('Post Count', labelpad=10, fontsize=8)
 ax.set_title('Post Count Comparison', pad=10, fontsize=8)
 
-#plt.show()
+fig.tight_layout()
 plt.savefig('plots/02_ClintonTrumpTweetPostComparison3DBar.png', dpi=300)
 plt.close()
 
@@ -360,11 +352,11 @@ ax.get_yaxis().get_major_formatter().set_scientific(False)
 ax.legend(prop={'size': 10})
 
 # Add axis and chart labels.
-ax.set_xlabel('Tweet Date', labelpad=10, fontsize=8)
-ax.set_ylabel('Favorite Count', labelpad=10, fontsize=8)
-ax.set_title('Favorite Comparison', pad=10, fontsize=8)
+ax.set_xlabel('Tweet Date', labelpad=10, fontsize=10, fontweight='bold')
+ax.set_ylabel('Favorite Count', labelpad=10, fontsize=10, fontweight='bold')
+ax.set_title('Favorite Comparison', pad=10, fontsize=12, fontweight='bold')
 
-# plt.show()
+fig.tight_layout()
 plt.savefig('plots/03_HillaryRetweetFavoriteScatter.png', dpi=300)
 plt.close()
 
@@ -391,6 +383,7 @@ ax1.set_ylabel("Count")
 ax2.legend()
 ax2.set_xlabel("Months")
 
+fig.tight_layout()
 plt.savefig('plots/04_hillarytweetsanalysis.png', dpi=300)
 plt.close()
 
@@ -424,10 +417,11 @@ ax.get_yaxis().get_major_formatter().set_scientific(False)
 ax.legend(prop={'size': 10})
 
 # Add axis and chart labels.
-ax.set_xlabel('Tweet Date', labelpad=10, fontsize=8)
-ax.set_ylabel('Count', labelpad=10, fontsize=8)
-ax.set_title('Clinton Retweet and Favorite', pad=10, fontsize=8)
+ax.set_xlabel('Tweet Date', labelpad=10, fontsize=10, fontweight='bold')
+ax.set_ylabel('Count', labelpad=10, fontsize=10, fontweight='bold')
+ax.set_title('Clinton Retweet and Favorite', pad=10, fontsize=12, fontweight='bold')
 
+fig.tight_layout()
 
 plt.savefig('plots/05_HillaryRetweetFavoriteScatter3D.png', dpi=300)
 plt.close()
@@ -453,6 +447,7 @@ ax1.set_ylabel("Count")
 
 ax2.legend()
 ax2.set_xlabel("Months")
+fig.tight_layout()
 
 plt.savefig('plots/06_Donaldtweetsanalysis.png', dpi=300)
 plt.close()
@@ -486,10 +481,11 @@ ax.get_yaxis().get_major_formatter().set_scientific(False)
 ax.legend(prop={'size': 10})
 
 # Add axis and chart labels.
-ax.set_xlabel('Tweet Date', labelpad=10, fontsize=8)
-ax.set_ylabel('Count', labelpad=10, fontsize=8)
-ax.set_title('Trump Retweet and Favorite', pad=10, fontsize=8)
+ax.set_xlabel('Tweet Date', labelpad=10, fontsize=10, fontweight='bold')
+ax.set_ylabel('Count', labelpad=10, fontsize=10, fontweight='bold')
+ax.set_title('Trump Retweet and Favorite', pad=10, fontsize=12, fontweight='bold')
 
+fig.tight_layout()
 
 plt.savefig('plots/07_DonaldRetweetFavoriteScatter3D.png', dpi=300)
 plt.close()
@@ -513,20 +509,30 @@ plt.close()
 df = pd.read_csv(filepath_or_buffer='data/WordsUsed.csv',
                  sep=',',
                  header=0)  # header starts in first line
+#add word desc
+df['word_desc'] = np.where(df['rate']== 1, 'Positive', 'Negative')
+
+
 # # filter clinton used words only
 df1 = df[(df['handle'] == 'HillaryClinton')]
+# for pie
+df1clinton = df1.groupby(['handle', 'word_desc'], as_index=False).agg({'count': 'sum'})
 # sort by count descending
 df1 = df1.sort_values(by='count', ascending=False).groupby('rate').head(26)
 df1 = df1.drop(df1[df1.word == 'trump'].index)
 df1 = df1.drop(df1[df1.word == 'like'].index)
 
+
 # # get the top 26 words
 
 # filter Trump used words only
 df2 = df[(df['handle'] == 'realDonaldTrump')]
+df2Trump = df2.groupby(['handle', 'word_desc'], as_index=False).agg({'count': 'sum'})
+
 df2 = df2.sort_values(by='count', ascending=False).groupby('rate').head(26)
 df2 = df2.drop(df2[df2.word == 'trump'].index)
 df2 = df2.drop(df2[df2.word == 'like'].index)
+
 
 # positive words
 df1pos = df1[df1['rate'] == 1]
@@ -535,6 +541,8 @@ df2pos = df2[df2['rate'] == 1]
 # positive words
 df1neg = df1[df1['rate'] == -1]
 df2neg = df2[df2['rate'] == -1]
+
+
 
 
 # Clinton Positive
@@ -579,6 +587,7 @@ ax.xaxis.grid(False)
 ax.set_xlabel('Count', labelpad=10, fontsize=10, fontweight='bold')
 ax.set_ylabel('Words', labelpad=10, fontsize=10, fontweight='bold')
 ax.set_title('Positive Words', pad=10, fontsize=12, fontweight='bold')
+fig.tight_layout()
 
 plt.savefig('plots/09_ClintonPositiveWords.png')
 
@@ -622,6 +631,7 @@ ax.xaxis.grid(False)
 ax.set_xlabel('Count', labelpad=10, fontsize=10, fontweight='bold')
 ax.set_ylabel('Words', labelpad=10, fontsize=10, fontweight='bold')
 ax.set_title('Negative Words', pad=10, fontsize=12, fontweight='bold')
+fig.tight_layout()
 
 plt.savefig('plots/10_ClintonNegativeWords.png')
 
@@ -664,6 +674,7 @@ ax.xaxis.grid(False)
 ax.set_xlabel('Count', labelpad=10, fontsize=10, fontweight='bold')
 ax.set_ylabel('Words', labelpad=10, fontsize=10, fontweight='bold')
 ax.set_title('Positive Words', pad=10, fontsize=12, fontweight='bold')
+fig.tight_layout()
 
 plt.savefig('plots/11_TrumpPositiveWords.png')
 
@@ -705,6 +716,7 @@ ax.xaxis.grid(False)
 ax.set_xlabel('Count', labelpad=10, fontsize=10, fontweight='bold')
 ax.set_ylabel('Words', labelpad=10, fontsize=10, fontweight='bold')
 ax.set_title('Negative Words', pad=10, fontsize=12, fontweight='bold')
+fig.tight_layout()
 
 plt.savefig('plots/12_TrumpNegativeWords.png')
 
@@ -789,5 +801,53 @@ plt.imshow(wordcloud)
 plt.axis("off")
 plt.tight_layout(pad=0)
 plt.savefig('plots/16_TrumpNegativeWordCloud.png')
+plt.close()
+
+#  scatter retweet and favorite
+# x = np.arange(len(df3.favorite_count))
+
+fig, ax = plt.subplots(1, 1, figsize=(12, 8), dpi=100)
+plt.style.use("ggplot")
+plt.xlim(0, 50000)
+plt.ylim(0, 100000)
+
+b1 = ax.scatter(df7.loc[df7['handle'] == 'HillaryClinton', 'retweet_count'],
+                df7.loc[df7['handle'] == 'HillaryClinton', 'favorite_count'], color="blue", label="Clinton", alpha=0.7)
+
+# Same thing, but offset the x by the width of the bar.
+b2 = ax.scatter(df7.loc[df7['handle'] == 'realDonaldTrump', 'retweet_count'],
+                df7.loc[df7['handle'] == 'realDonaldTrump', 'favorite_count'], color="red", label="Trump", alpha=0.7)
+
+
+# ensure the format of the y axis using the actual values and not exponential
+ax.get_yaxis().get_major_formatter().set_scientific(False)
+
+# Add legend.
+ax.legend(prop={'size': 12})
+
+# Add axis and chart labels.
+ax.set_xlabel('Retweets', labelpad=10, fontsize=12, fontweight='bold')
+ax.set_ylabel('Favorites', labelpad=10, fontsize=12, fontweight='bold')
+ax.set_title('Clinton Vs Trump - Tweets Comparison', pad=10, fontsize=14, fontweight='bold')
+fig.tight_layout()
+
+plt.savefig('plots/17_ScatterRetweetandFavorite.png')
+plt.close()
+
+# total positve and negative words
+
+
+# Pie plot
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 8), sharex=True)
+
+ax1.pie(df1clinton['count'], labels=df1clinton['word_desc'] + ' ' + df1clinton['count'].astype(str), autopct='%1.1f%%')
+ax1.set_title('Hillary Clinton', fontsize=10, fontweight='bold')
+
+ax2.pie(df2Trump['count'], labels=df2Trump['word_desc']+ ' ' + df2Trump['count'].astype(str), autopct='%1.1f%%')
+ax2.set_title('Donal Trump', fontsize=10, fontweight='bold')
+ax1.set_xlabel('Positive and Negative Words Rate Comparison', fontsize=10, fontweight='bold')
+fig.tight_layout()
+
+plt.savefig('plots/18_PositiveNegativeWordsComparison.png', dpi=300)
 plt.close()
 
