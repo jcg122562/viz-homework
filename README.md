@@ -14,7 +14,7 @@ however, with the right color coding being red as for Trump and blue for Clinton
 you can easily see which color dominated the figure and in this case, the red.
 
 The pie, line and bar charts can tell me numbers, but for this type of analysis which is more on behavioral
-analysis wherein I am examining the relationshio of two variables, scatter plot is the best chart to use.
+analysis wherein I am examining the relationshiop of two variables, scatter plot is the best chart to use.
 
 I like the use of the WORDCLOUD too which I have tried to incorporate in this assignment.  In this way, 
 I can show what are the top positive and negative words used by the two candidates. 
