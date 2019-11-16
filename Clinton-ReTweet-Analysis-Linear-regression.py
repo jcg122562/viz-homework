@@ -62,25 +62,11 @@ df['retweet_class'] = np.where(df['retweet_count'].between(1, 1000),
                                3,
                                4)))
 
-# # Get the retweet_class (TARGET)
-# for i in df['retweet_count']:
-#     if i >= 500:
-#         df['retweet_class'] = round(df['retweet_count'] / 500)
-#         df['retweet_class'].astype(int)
-#     else:
-#         df['retweet_class'] = 0
-#
-# # anything that is > 15 should be 16 class
-# df['retweet_class'] = np.where(df['retweet_class'] > 5, 6, df['retweet_class'])
 
 df1 = df[['retweet_class', 'retweet_count']]
 
 
 
-# print(df1['retweet_class'].unique)
-# # print(df['retweet_class'].min())
-# print(df['retweet_class'].mean())
-# print(df['retweet_class'].max())
 
 # add post_count
 df['post_count'] = df['handle'].count()
@@ -88,51 +74,17 @@ df['post_count'] = df['handle'].count()
 # get weekday
 df['week_day'] = df['actual_date'].dt.dayofweek
 
-# # get #hashtag  #mention and URL
-# for tweet_text in df['text']: #'.index:
-#     # tweet_text = df.ix[i]['text']
-#     # print(tweet_text)
-#     tweet = tweet_text.lower()
-#     tweet_tokenized = tweet.split()
-#     # print(tweet_tokenized)
-#
-#     hash_tag = 0
-#     mention = 0
-#     url = 0
-#
-#     for word in tweet_tokenized:
-#         # get hashtag count
-#         if word[0:1] == "#" and len(word) > 1:
-#             hash_tag = hash_tag + word.count('#')
-#         # get mention count
-#         if word[0:1] == "@" and len(word) > 1:
-#             mention = mention + word.count('@')
-#         if word[0:4] == "http" and len(word) > 4:
-#             url = url + word.count('https')
-#
-#     df['hashtag_count'] = hash_tag
-#     df['mention_count'] = mention
-#     df['url_count'] = url
-#
 df['hashtag_count'] = df.text.str.count("#")
 df['mention_count'] = df.text.str.count("@")
 df['url_count'] = df.text.str.count("https")
 
 
-# # score the tweet based line is 20000
-# df['retweet_score'] = np.where(df['retweet_count'] == 5000,
-#                                0,
-#                       np.where(df['retweet_count'] < 5000,
-#                                -1, 1))
-#
 print(f'url count:', df['url_count'].count())
-# select only important columns to become the main dataframe
-# print(f'url count: ', df['url_count'])
 
 
 df = df[['retweet_class', 'handle', 'text', 'time', 'actual_date', 'actual_time', 'week_day',
          'retweet_count', 'favorite_count', 'month_year', 'month', 'post_count','hour', 'session','hashtag_count',
-         'mention_count','retweet_score', 'url_count']]
+         'mention_count', 'url_count']]
 
 
 # for sklearn columns
@@ -203,24 +155,3 @@ print(f"Printing MAE error(avg abs residual): {metrics.mean_absolute_error(y_tes
 print(f"Printing MSE error: {metrics.mean_squared_error(y_test, predicted_values)}")
 print(f"Printing RMSE error: {np.sqrt(metrics.mean_squared_error(y_test, predicted_values))}")
 
-# # Printing original Dataset
-# print(f"X.shape: {X.shape}, y.shape: {y.shape}")
-
-#
-# total_rows0 = df[df['retweet_class']== 0].count()
-# total_rows1 = df[df['retweet_class']== 1].count()
-# total_rows2 = df[df['retweet_class']== 2].count()
-# total_rows3 = df[df['retweet_class']== 3].count()
-# total_rows4 = df[df['retweet_class']== 4].count()
-# total_rows5 = df[df['retweet_class']== 5].count()
-# total_rows6 = df[df['retweet_class']== 6].count()
-#
-#
-#
-# print(f'total rows class 0: ', total_rows0)
-# print(f'total rows class 1: ', total_rows1)
-# print(f'total rows class 2: ', total_rows2)
-# print(f'total rows class 2: ', total_rows3)
-# print(f'total rows class 2: ', total_rows4)
-# print(f'total rows class 2: ', total_rows5)
-# print(f'total rows class 6: ', total_rows6)
